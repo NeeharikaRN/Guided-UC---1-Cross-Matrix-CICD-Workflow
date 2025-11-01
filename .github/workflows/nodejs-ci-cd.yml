@@ -93,6 +93,7 @@ jobs:
           echo "🚀 Deploying BETA version..."
           cd deployed_app
           npm run start &
+          npx wait-on http://localhost:3000
           curl http://localhost:3000
           echo "✅ Beta deployment successful!"
 
@@ -102,5 +103,6 @@ jobs:
           echo "🚀 Deploying STABLE version..."
           cd deployed_app
           npm run start &
+          npx wait-on http://localhost:3000
           curl http://localhost:3000
           echo "✅ Stable deployment successful!"
