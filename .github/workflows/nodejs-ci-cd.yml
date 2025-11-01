@@ -1,0 +1,104 @@
+name: Node.js WebApp CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  # ------------------ BUILD ------------------
+  build:
+    name: Build Node.js WebApp
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodejs-build
+          path: dist/
+
+  # ------------------ TEST ------------------
+  test:
+    name: Test on ${{ matrix.os }}
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nodejs-build
+          path: ./build
+
+      - name: Run Tests
+        run: npm test
+
+  # ------------------ DEPLOY ------------------
+  deploy:
+    name: Deploy on Windows Self-Hosted Runner
+    needs: test
+    runs-on: self-hosted
+    if: ${{ success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nodejs-build
+          path: ./deployed_app
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: cd deployed_app && npm install --production
+
+      - name: Deploy Beta Version
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          echo "🚀 Deploying BETA version..."
+          cd deployed_app
+          npm run start
+          echo "✅ Beta deployment successful!"
+
+      - name: Deploy Stable Version
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "🚀 Deploying STABLE version..."
+          cd deployed_app
+          npm run start
+          echo "✅ Stable deployment successful!"
