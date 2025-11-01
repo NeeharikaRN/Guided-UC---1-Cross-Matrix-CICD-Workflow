@@ -79,11 +79,6 @@ jobs:
           name: nodejs-build
           path: ./deployed_app
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Install Dependencies
         run: cd deployed_app && npm install --production
 
