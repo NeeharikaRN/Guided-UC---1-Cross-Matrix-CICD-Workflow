@@ -1,0 +1,21 @@
+{
+  "name": "guided-uc---1-cross-matrix-cicd-workflow",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo Building Node.js app... && cpx \"**/*\" dist",
+    "test": "npx mocha test/app.test.js",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "cpx": "^1.5.0",
+    "mocha": "^11.7.4"
+  }
+}
