@@ -39,7 +39,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-hosted]
 
     steps:
       - name: Checkout Code
@@ -64,9 +64,9 @@ jobs:
 
   # ------------------ DEPLOY ------------------
   deploy:
-    name: Deploy on Windows Self-Hosted Runner
+    name: Deploy
     needs: test
-    runs-on: self-hosted
+    runs-on: ubuntu-hosted
     if: ${{ success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
 
     steps:
@@ -79,6 +79,11 @@ jobs:
           name: nodejs-build
           path: ./deployed_app
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install Dependencies
         run: cd deployed_app && npm install --production
 
@@ -87,7 +92,8 @@ jobs:
         run: |
           echo "🚀 Deploying BETA version..."
           cd deployed_app
-          npm run start
+          npm run start &
+          curl http://localhost:3000
           echo "✅ Beta deployment successful!"
 
       - name: Deploy Stable Version
@@ -95,5 +101,6 @@ jobs:
         run: |
           echo "🚀 Deploying STABLE version..."
           cd deployed_app
-          npm run start
+          npm run start &
+          curl http://localhost:3000
           echo "✅ Stable deployment successful!"
